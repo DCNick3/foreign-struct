@@ -5,7 +5,6 @@
 #pragma once
 
 #include "util.h"
-#include "integer.h"
 
 namespace foreign {
     // enum types materialization

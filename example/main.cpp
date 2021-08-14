@@ -40,10 +40,10 @@ using test_union = target_union<
 
 // definitions of struct fields
 using test_struct_def = target_struct_def<
-target_struct_field<std::int32_t, 0>,
-target_struct_field<std::uint64_t, 8>,
-target_struct_field<test_enum, 16>,
-target_struct_field<test_union, 20>
+    target_struct_field<std::int32_t, 0>,
+    target_struct_field<std::uint64_t, 8>,
+    target_struct_field<test_enum, 16>,
+    target_struct_field<test_union, 20>
 >;
 
 /*struct test_struct : public target_struct_base<test_struct_def, test_struct> {

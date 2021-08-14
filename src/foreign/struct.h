@@ -135,13 +135,13 @@ namespace foreign {
         }
 
 
+    public:
         static inline T materialize(data_span_c data) {
             auto matuple = make_materialized_tuple(data);
 
             return T(std::move(matuple));
         }
 
-    public:
         static inline void unmaterialize(data_span data, T &o) {
             unmaterialize_impl(data, index_seq{}, o);
         }
