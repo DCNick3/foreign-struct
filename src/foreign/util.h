@@ -56,7 +56,7 @@ namespace foreign {
 
     // trait helpers
     template<typename T>
-    inline constexpr std::size_t target_sizeof_v = target_sizeof<T>::value;
+    inline constexpr std::size_t target_sizeof_v = target_sizeof<std::remove_reference_t<T>>::value;
 
     template<typename TargetType>
     using span_for = std::span<std::uint8_t, target_sizeof_v<TargetType>>;
