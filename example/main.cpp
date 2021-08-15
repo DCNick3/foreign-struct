@@ -1,6 +1,4 @@
-//
-// Created by dcnick3 on 8/10/21.
-//
+
 #include "foreign/struct.h"
 #include "foreign/union.h"
 #include "foreign/enum.h"
