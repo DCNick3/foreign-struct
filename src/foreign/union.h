@@ -7,15 +7,13 @@ namespace foreign {
     template<typename ...Members>
     class target_union;
 
-    namespace detail {
-        template<typename ...Members>
-        void TargetUnion_helper(target_union<Members...>) {}
-    }
+    template<typename T>
+    struct is_target_union : std::false_type {};
+    template<typename ...Members>
+    struct is_target_union<target_union<Members...>> : std::true_type {};
 
     template<typename T>
-    concept TargetUnion = requires(T t) {
-        detail::TargetUnion_helper(std::move(t));
-    };
+    concept TargetUnion = is_target_union<T>::value;
 
     // union "materialization"
     template<TargetUnion T>

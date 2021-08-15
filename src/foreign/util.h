@@ -92,10 +92,19 @@ namespace foreign {
     template<typename T>
     concept ConstReference = std::is_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>;
 
+    // some tests right away, along with explanation behind the logic =)
     static_assert(NonConstReference<int &>);
     static_assert(!ConstReference<int &>);
     static_assert(ConstReference<int const &>);
     static_assert(!NonConstReference<int const &>);
+
+    template<typename T>
+    struct is_array : std::false_type {};
+    template<typename T, std::size_t S>
+    struct is_array<std::array<T, S>> : std::true_type {};
+
+    template<typename T>
+    concept Array = is_array<T>::value;
 
     // RAII holder type
     // materializes the target value on construction, unmaterializes on destruction

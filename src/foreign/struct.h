@@ -9,46 +9,36 @@ namespace foreign {
     template<typename Type, std::size_t Offset>
     struct target_struct_field;
 
-    namespace detail {
-        // here (and below) we could've used lambdas not to introduce additional functions,
-        //   but clang does not (yet) support lambdas in unevaluated contexts, which are allowed in C++20
-        //   should replace them in the
-        template<typename Type, std::size_t Offset>
-        void TargetStructField_helper(target_struct_field<Type, Offset> **) {}
-    }
+    template<typename T>
+    struct is_target_struct_field : std::false_type {};
+    template<typename Type, std::size_t Offset>
+    struct is_target_struct_field<target_struct_field<Type, Offset>> : std::true_type {};
 
     template<typename T>
-    concept TargetStructField = requires(T **t) {
-        detail::TargetStructField_helper(t);
-    };
+    concept TargetStructField = is_target_struct_field<T>::value;
 
 
     template<TargetStructField ...Fields>
     class target_struct_def;
 
-    namespace detail {
-        template<TargetStructField ...Args>
-        void TargetStructDef_helper(target_struct_def<Args...> **) {}
-    }
+    template<typename T>
+    struct is_target_struct_def : std::false_type {};
+    template<typename ...Args>
+    struct is_target_struct_def<target_struct_def<Args...>> : std::true_type {};
 
     template<typename T>
-    concept TargetStructDef = requires(T **t) {
-        detail::TargetStructDef_helper(t);
-    };
-
+    concept TargetStructDef = is_target_struct_def<T>::value;
 
     template<typename Def>
     class target_struct_unnamed;
 
-    namespace detail {
-        template<typename T>
-        void TargetStructUnnamed_helper(target_struct_unnamed<T> **) {}
-    }
+    template<typename T>
+    struct is_target_struct_unnamed : std::false_type {};
+    template<typename T>
+    struct is_target_struct_unnamed<target_struct_unnamed<T>> : std::true_type {};
 
     template<typename T>
-    concept TargetStructUnnamed = requires(T **t) {
-        detail::TargetStructUnnamed_helper(t);
-    };
+    concept TargetStructUnnamed = is_target_struct_unnamed<T>::value;
 
 
     namespace detail {
