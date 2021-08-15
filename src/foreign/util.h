@@ -98,14 +98,6 @@ namespace foreign {
     static_assert(ConstReference<int const &>);
     static_assert(!NonConstReference<int const &>);
 
-    template<typename T>
-    struct is_array : std::false_type {};
-    template<typename T, std::size_t S>
-    struct is_array<std::array<T, S>> : std::true_type {};
-
-    template<typename T>
-    concept Array = is_array<T>::value;
-
     // RAII holder type
     // materializes the target value on construction, unmaterializes on destruction
     // supports move, but not copy

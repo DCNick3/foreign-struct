@@ -20,3 +20,4 @@ endfunction()
 
 foreign_test_suite(SUITE_NAME integer)
 foreign_test_suite(SUITE_NAME enum)
+foreign_test_suite(SUITE_NAME array)

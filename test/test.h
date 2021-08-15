@@ -78,6 +78,9 @@ namespace foreign::test {
     struct stringifier
     {};
 
+    template<typename T>
+    auto stringify(T&& t) { return stringifier<std::remove_cvref_t<T>>::stringify_value(std::forward<T>(t)); }
+
     namespace detail {
         template<std::size_t N>
         struct string_literal {
@@ -92,7 +95,7 @@ namespace foreign::test {
         template<typename T, string_literal suffix>
         struct int_stringifier
         {
-            static auto stringify(T t) { return std::to_string(std::forward<T>(t)) + suffix.arr_.data(); }
+            static auto stringify_value(T t) { return std::to_string(std::forward<T>(t)) + suffix.arr_.data(); }
         };
     }
 
@@ -113,13 +116,25 @@ namespace foreign::test {
     template<foreign::Enum E>
     struct stringifier<E> {
         using underlying = std::underlying_type_t<E>;
-        static auto stringify(E val) {
-            return stringifier<underlying>::stringify(static_cast<underlying>(val));
+        static auto stringify_value(E val) {
+            return stringify(static_cast<underlying>(val));
         }
     };
 
-    template<typename T>
-    auto stringify(T&& t) { return stringifier<std::remove_cvref_t<T>>::stringify(std::forward<T>(t)); }
+    template<typename T, std::size_t S>
+    struct stringifier<std::array<T, S>> {
+        static auto stringify_value(const std::array<T, S>& val) {
+            std::stringstream ss;
+            ss << '{';
+            auto first = true;
+            for (const auto &arg : val) {
+                ss << (first ? "" : ", ") << stringify(arg);
+                first = false;
+            }
+            ss << '}';
+            return ss.str();
+        }
+    };
 
     namespace detail {
         bool is_listing_tests = false;
