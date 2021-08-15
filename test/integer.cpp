@@ -7,7 +7,7 @@
 
 using namespace scw::intliterals;
 
-ut::suite integer = [] {
+ut::suite suite = [] {
     using namespace ut;
 
     "unmaterialize"_test = [] {
@@ -69,5 +69,20 @@ ut::suite integer = [] {
         expect(acc_chk<std::uint32_t>("ff000000"_hex, inc_u32, "00010000"_hex));
         expect(acc_chk<std::uint32_t>("ffff0000"_hex, inc_u32, "00000100"_hex));
         expect(acc_chk<std::uint32_t>("ffffffff"_hex, inc_u32, "00000000"_hex));
+
+        expect(acc_chk<std::int32_t>("00000000"_hex, [](auto& t) {--t;}, "ffffffff"_hex));
+        expect(acc_chk<std::int32_t>("ffff0000"_hex, [](auto& t) {++t;}, "00000100"_hex));
+
+        const auto inc_u64 = [](std::uint64_t& t) {++t;};
+
+        expect(acc_chk<std::uint64_t>("0000000000000000"_hex, inc_u64, "0100000000000000"_hex));
+        expect(acc_chk<std::uint64_t>("0100000000000000"_hex, inc_u64, "0200000000000000"_hex));
+        expect(acc_chk<std::uint64_t>("7f00000000000000"_hex, inc_u64, "8000000000000000"_hex));
+        expect(acc_chk<std::uint64_t>("8000000000000000"_hex, inc_u64, "8100000000000000"_hex));
+        expect(acc_chk<std::uint64_t>("ff00000000000000"_hex, inc_u64, "0001000000000000"_hex));
+        expect(acc_chk<std::uint64_t>("ffff000000000000"_hex, inc_u64, "0000010000000000"_hex));
+        expect(acc_chk<std::uint64_t>("ffffffff00000000"_hex, inc_u64, "0000000001000000"_hex));
+        expect(acc_chk<std::uint64_t>("ffffffffffffffff"_hex, inc_u64, "0000000000000000"_hex));
+
     };
 };

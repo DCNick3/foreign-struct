@@ -110,6 +110,14 @@ namespace foreign::test {
     template<>
     struct stringifier<std::int32_t> : public detail::int_stringifier<std::int32_t, "_i32"> {};
 
+    template<foreign::Enum E>
+    struct stringifier<E> {
+        using underlying = std::underlying_type_t<E>;
+        static auto stringify(E val) {
+            return stringifier<underlying>::stringify(static_cast<underlying>(val));
+        }
+    };
+
     template<typename T>
     auto stringify(T&& t) { return stringifier<std::remove_cvref_t<T>>::stringify(std::forward<T>(t)); }
 

@@ -19,3 +19,4 @@ function(foreign_test_suite)
 endfunction()
 
 foreign_test_suite(SUITE_NAME integer)
+foreign_test_suite(SUITE_NAME enum)
