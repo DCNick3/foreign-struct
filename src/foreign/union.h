@@ -7,23 +7,18 @@ namespace foreign {
     template<typename ...Members>
     class target_union;
 
-    template<typename T>
-    struct is_target_union : std::false_type {};
-    template<typename ...Members>
-    struct is_target_union<target_union<Members...>> : std::true_type {};
-
-    template<typename T>
-    concept TargetUnion = is_target_union<T>::value;
-
     // union "materialization"
-    template<TargetUnion T>
-    struct materializer<T> {
+    template<typename ...Members>
+    struct materializer<target_union<Members...>> {
+        using T = target_union<Members...>;
+
         static auto materialize(span_for_c<T> data) {
             // no bitcast in clang yet :'(
             T result;
             static_assert(std::is_trivially_copyable_v<T>);
             static_assert(std::is_trivially_constructible_v<T>);
             static_assert(sizeof(T) == target_sizeof_v<T>);
+            // target_union has only an std::array of std::uint8_t's as its member, so it's safe to memcpy it
             memcpy(&result, data.data(), sizeof(T));
             return result;
         }
@@ -32,14 +27,15 @@ namespace foreign {
             static_assert(std::is_trivially_copyable_v<T>);
             static_assert(std::is_trivially_constructible_v<T>);
             static_assert(sizeof(T) == target_sizeof_v<T>);
+            // target_union has only an std::array of std::uint8_t's as its member, so it's safe to memcpy it
             memcpy(data.data(), &v, sizeof(T));
         }
     };
 
 
-    template<TargetUnion T>
-    struct target_sizeof<T> {
-        static constexpr std::size_t value = T::size;
+    template<typename ...Members>
+    struct target_sizeof<target_union<Members...>> {
+        static constexpr std::size_t value = target_union<Members...>::size;
     };
 
     template<typename ...Members>
