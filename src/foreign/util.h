@@ -65,6 +65,9 @@ namespace foreign {
     using span_for_c = std::span<const std::uint8_t, target_sizeof_v<TargetType>>;
 
     template<typename TargetType>
+    using array_for = std::array<std::uint8_t, target_sizeof_v<TargetType>>;
+
+    template<typename TargetType>
     auto target_materialize(span_for_c<TargetType> data) {
         return materializer<TargetType>::materialize(data);
     }

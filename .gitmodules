@@ -4,3 +4,6 @@
 [submodule "ext-deps/cxx-sized-int-literals"]
 	path = ext-deps/cxx-sized-int-literals
 	url = https://github.com/swilson007/cxx-sized-int-literals.git
+[submodule "ext-deps/cxxopts"]
+	path = ext-deps/cxxopts
+	url = https://github.com/jarro2783/cxxopts.git

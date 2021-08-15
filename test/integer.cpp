@@ -8,8 +8,6 @@
 using namespace scw::intliterals;
 using namespace foreign::test;
 
-
-
 ut::suite integer = [] {
     using namespace ut;
 
@@ -26,5 +24,9 @@ ut::suite integer = [] {
 
         expect(umat(1_u32) == "01000000"_hex);
         expect(umat(-1_u32) == "ffffffff"_hex);
+    };
+
+    "materialize"_test = [] {
+
     };
 };
