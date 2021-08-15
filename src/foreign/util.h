@@ -69,9 +69,16 @@ namespace foreign {
         return materializer<TargetType>::materialize(data);
     }
 
-    template<typename TargetType, typename Mat>
-    void target_unmaterialize(span_for<TargetType> data, Mat&& materialized) {
-        return materializer<TargetType>::unmaterialize(data, std::forward<Mat>(materialized));
+    template<typename TargetType>
+    void target_unmaterialize(span_for<TargetType> data, TargetType&& materialized) {
+        return materializer<std::remove_reference_t<TargetType>>::unmaterialize(data, std::forward<TargetType>(materialized));
+    }
+
+    template<typename TargetType>
+    auto target_unmaterialize(TargetType&& materialized) {
+        std::array<std::uint8_t, target_sizeof_v<TargetType>> buffer;
+        target_unmaterialize(buffer, std::forward<TargetType>(materialized));
+        return buffer;
     }
 
     // concepts!

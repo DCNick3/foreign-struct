@@ -1,0 +1,6 @@
+[submodule "ext-deps/ut"]
+	path = ext-deps/ut
+	url = https://github.com/boost-ext/ut.git
+[submodule "ext-deps/cxx-sized-int-literals"]
+	path = ext-deps/cxx-sized-int-literals
+	url = https://github.com/swilson007/cxx-sized-int-literals.git
