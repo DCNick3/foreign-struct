@@ -7,7 +7,6 @@ on:
     branches: [ master ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   CC: gcc-11
   CXX: g++-11
 
@@ -19,16 +18,47 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     strategy:
       matrix:
+        os: [ubuntu-latest]
+        compiler:
+          - { compiler: gcc, CC: gcc-11, CXX: g++-11 }
+          - { compiler: clang, CC: clang, CXX: clang++ }
         configuration: [Debug, Release, RelWithDebInfo]
-        
-    runs-on: ubuntu-latest
+        sanitize: [none, undefined]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Install gcc 11, valgrind
-      run:   |
-        sudo apt update
-        sudo apt install gcc-11 g++-11 valgrind
-      shell: bash
+      - name: Install gcc 11
+        run:   |
+          sudo apt update
+          sudo apt install gcc-11 g++-11
+        shell: bash
+        if: ${{matrix.compiler.compiler == 'gcc'}}
+
+      - name: Install valgrind
+        run:   |
+          sudo apt update
+          sudo apt install valgrind
+        shell: bash
+        if: ${{matrix.sanitize == 'none' && matrix.os == 'linux-latest'}}
+
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./llvm
+          key: llvm-12.0.1
+        if: ${{matrix.compiler.compiler == 'clang'}}
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "12.0.1"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+        if: ${{matrix.compiler.compiler == 'clang'}}
+
+
+
 
     - uses: actions/checkout@v2
     - name: Checkout submodules
@@ -37,7 +67,10 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.configuration}} -DSANITIZE=${{matrix.sanitize}}
+      env:
+        CC: ${{matrix.compiler.CC}}
+        CXX: ${{matrix.compiler.CXX}}
 
     - name: Build
       # Build your program with the given configuration
@@ -53,5 +86,6 @@ jobs:
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: valgrind --trace-children=yes ctest -C ${{matrix.configuration}}
+      run: valgrind --trace-children=yes ctest -C ${{matrix.configuration}} -j 3
+      if: ${{matrix.sanitize == 'none' && matrix.os == 'linux-latest'}}
       

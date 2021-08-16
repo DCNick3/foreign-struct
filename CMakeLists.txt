@@ -29,6 +29,22 @@ target_include_directories(foreign_struct PUBLIC src)
 add_executable(example example/main.cpp)
 target_link_libraries(example foreign_struct)
 
-set(CMAKE_CXX_FLAGS -fconcepts-diagnostics-depth=10)
+if (SANITIZE STREQUAL "undefined")
+    message("Sanitizing undefined")
+    set(CMAKE_CXX_FLAGS "-fsanitize=undefined -fno-omit-frame-pointer")
+else()
+    message("Sanitizing nothing")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+    # nothing yet
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    set(CMAKE_CXX_FLAGS "-fconcepts-diagnostics-depth=10")
+
+endif()
+
 
 add_subdirectory(test)
