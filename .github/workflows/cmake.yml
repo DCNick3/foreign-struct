@@ -14,13 +14,13 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     strategy:
       matrix:
-        os: [ubuntu-latest]
         compiler:
           - { compiler: gcc, version: 11 }
           - { compiler: clang, version: 12, stdlib: libstdc++ }
           - { compiler: clang, version: 12, stdlib: libc++ }
-        configuration: [Debug, Release, RelWithDebInfo]
         sanitize: [none, undefined]
+        configuration: [Debug, Release, RelWithDebInfo]
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
