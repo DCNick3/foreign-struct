@@ -18,13 +18,13 @@ namespace foreign {
     concept TargetStructField = is_target_struct_field<T>::value;
 
 
-    template<TargetStructField ...Fields>
+    template<std::size_t Size, TargetStructField ...Fields>
     class target_struct_def;
 
     template<typename T>
     struct is_target_struct_def : std::false_type {};
-    template<typename ...Args>
-    struct is_target_struct_def<target_struct_def<Args...>> : std::true_type {};
+    template<std::size_t Size, typename ...Args>
+    struct is_target_struct_def<target_struct_def<Size, Args...>> : std::true_type {};
 
     template<typename T>
     concept TargetStructDef = is_target_struct_def<T>::value;
@@ -184,25 +184,29 @@ namespace foreign {
         static constexpr std::size_t size = target_sizeof_v<Type>;
     };
 
-    template<TargetStructField ...Fields>
+    template<std::size_t Size, TargetStructField ...Fields>
     class target_struct_def {
+    private:
         template<typename Field>
         using materialized_field_type = typename Field::type;
-
-        constexpr static std::size_t comp_size() {
-            std::size_t size = 0;
-            util::constexpr_for<0, std::tuple_size_v<field_tuple>, 1>([&](auto i) constexpr {
-                using C = std::tuple_element_t<i, field_tuple>;
-                size = std::max(size, C::offset + C::size);
-            });
-            return size;
-        }
 
     public:
         using field_tuple = std::tuple<Fields...>;
         using mat_tuple = std::tuple<materialized_field_type<Fields>...>;
         static constexpr std::size_t field_count = sizeof...(Fields);
-        static constexpr std::size_t size = comp_size();
+        static constexpr std::size_t size = Size;
+
+    private:
+        constexpr static std::size_t comp_size() {
+            std::size_t res = 0;
+            util::constexpr_for<0, field_count, 1>([&](auto i) constexpr {
+                using C = std::tuple_element_t<i, field_tuple>;
+                res = std::max(res, C::offset + C::size);
+            });
+            return res;
+        }
+
+        static_assert(comp_size() <= Size);
     };
 
     template<TargetStructDef Def, typename Mat>

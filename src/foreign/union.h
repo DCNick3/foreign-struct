@@ -4,13 +4,13 @@
 #include "util.h"
 
 namespace foreign {
-    template<typename ...Members>
+    template<std::size_t Size, typename ...Members>
     class target_union;
 
     // union "materialization"
-    template<typename ...Members>
-    struct materializer<target_union<Members...>> {
-        using T = target_union<Members...>;
+    template<std::size_t Size, typename ...Members>
+    struct materializer<target_union<Size, Members...>> {
+        using T = target_union<Size, Members...>;
 
         static auto materialize(span_for_c<T> data) {
             // no bitcast in clang yet :'(
@@ -33,12 +33,12 @@ namespace foreign {
     };
 
 
-    template<typename ...Members>
-    struct target_sizeof<target_union<Members...>> {
-        static constexpr std::size_t value = target_union<Members...>::size;
+    template<std::size_t Size, typename ...Members>
+    struct target_sizeof<target_union<Size, Members...>> {
+        static constexpr std::size_t value = target_union<Size, Members...>::size;
     };
 
-    template<typename ...Members>
+    template<std::size_t Size, typename ...Members>
     class target_union {
     private:
         using member_tuple = std::tuple<Members...>;
@@ -62,8 +62,10 @@ namespace foreign {
             return std::span(raw_data).template first<target_sizeof_v<T>>();
         }
 
+        static_assert(comp_size() <= Size);
+
     public:
-        static constexpr std::size_t size = comp_size();
+        static constexpr std::size_t size = Size;
 
         template<std::size_t I>
         auto get() const {

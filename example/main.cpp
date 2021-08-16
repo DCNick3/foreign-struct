@@ -29,6 +29,7 @@ enum class test_enum : std::uint32_t {
 };
 
 using test_union = target_union<
+        8,
         std::uint16_t,
         std::uint32_t,
         std::uint64_t,
@@ -38,6 +39,7 @@ using test_union = target_union<
 
 // definitions of struct fields
 using test_struct_def = target_struct_def<
+    28,
     target_struct_field<std::int32_t, 0>,
     target_struct_field<std::uint64_t, 8>,
     target_struct_field<test_enum, 16>,
@@ -68,8 +70,9 @@ using test_struct_def = target_struct_def<
 using test_struct = target_struct_unnamed<test_struct_def>;
 
 using wrap_struct_def = target_struct_def<
-target_struct_field<test_struct, 0>,
-target_struct_field<std::uint32_t, 28>
+    32,
+    target_struct_field<test_struct, 0>,
+    target_struct_field<std::uint32_t, 28>
 >;
 
 // a helper class that allows to access fields by their names
