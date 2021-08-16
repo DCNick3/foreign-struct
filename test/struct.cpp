@@ -1,5 +1,7 @@
 #include "test.h"
 
+#include "struct_stringify.h"
+
 #include <foreign/struct.h>
 #include <foreign/integer.h>
 
@@ -12,23 +14,6 @@ using def = foreign::target_struct_def<Fields...>;
 
 template<typename Type, std::size_t Offset>
 using field = foreign::target_struct_field<Type, Offset>;
-
-
-template<foreign::TargetStruct T>
-struct stringifier<T> {
-    static auto stringify_value(const T& val) {
-        std::stringstream ss;
-        ss << '{';
-        auto first = true;
-        foreign::util::constexpr_for<0, T::def::field_count, 1>([&](auto i) {
-            ss << (first ? "" : ", ") << stringify(val.template get_field<i>());
-            first = false;
-        });
-        ss << '}';
-        return ss.str();
-    }
-};
-
 
 using def_1 = def<
             field<std::uint8_t, 0>,

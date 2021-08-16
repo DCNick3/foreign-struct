@@ -40,6 +40,7 @@ namespace foreign {
 
     template<typename ...Members>
     class target_union {
+    private:
         using member_tuple = std::tuple<Members...>;
 
         static constexpr std::size_t comp_size() {
@@ -71,15 +72,23 @@ namespace foreign {
         }
 
         template<std::size_t I, typename T>
-        void set(T v) {
+        void set(T&& v) {
             using MT = std::tuple_element_t<I, member_tuple>;
-            return target_unmaterialize<MT>(get_span_for<MT>(), std::move(v));
+            return target_unmaterialize<MT>(get_span_for<MT>(), std::forward<T>(v));
         }
 
         template<std::size_t I>
         auto use() {
             using MT = std::tuple_element_t<I, member_tuple>;
             return target_rw_mat_holder<MT>(get_span_for<MT>());
+        }
+
+        template<std::size_t I, typename T>
+        static constexpr auto from(T&& t) {
+            target_union res;
+            res.raw_data = {};
+            res.set<I>(std::forward<T>(t));
+            return res;
         }
 
     private:
