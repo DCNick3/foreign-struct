@@ -41,7 +41,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{matrix.configuration}}
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.configuration}} --parallel
 
     - name: Test
       working-directory: ${{github.workspace}}/build
