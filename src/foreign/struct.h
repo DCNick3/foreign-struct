@@ -29,7 +29,7 @@ namespace foreign {
     template<typename T>
     concept TargetStructDef = is_target_struct_def<T>::value;
 
-    template<typename Def>
+    template<TargetStructDef Def>
     class target_struct_unnamed;
 
     template<typename T>
@@ -126,7 +126,7 @@ namespace foreign {
         static inline T materialize(data_span_c data) {
             auto matuple = make_materialized_tuple(data);
 
-            return T(std::move(matuple));
+            return std::make_from_tuple<T>(std::move(matuple));
         }
 
         static inline void unmaterialize(data_span data, T &o) {
@@ -145,7 +145,7 @@ namespace foreign {
         static constexpr std::size_t value = T::size;
     };
 
-    template<typename Def>
+    template<TargetStructDef Def>
     class target_struct_unnamed final
         : public Def::mat_tuple {
     private:
@@ -155,11 +155,9 @@ namespace foreign {
         using def = Def;
         static constexpr std::size_t size = Def::size;
 
-        inline target_struct_unnamed(mat_tuple& values)
-                : mat_tuple(values) {}
-
-        inline target_struct_unnamed(mat_tuple&& values)
-                : mat_tuple(values) {}
+        template<typename ...Args>
+        inline target_struct_unnamed(Args&& ... args)
+                : mat_tuple(std::forward<Args>(args)...) {}
 
         target_struct_unnamed(target_struct_unnamed &other) = delete;
 
@@ -233,6 +231,17 @@ namespace foreign {
             return Mat::field_accessor::template get_field<I>(*static_cast<Mat *>(this));
         }
 
+        bool operator==(target_struct_base const& o) const {
+            bool result = true;
+            util::constexpr_for<0, Def::field_count, 1>([&](auto i) {
+                result &= get_field<i>() == o.template get_field<i>();
+            });
+            return result;
+        }
+        bool operator !=(target_struct_base const& o) const {
+            return !operator==(o);
+        }
+
     protected:
         template<auto ...Args>
         struct field_accessor_base {
@@ -245,21 +254,4 @@ namespace foreign {
             }
         };
     };
-
-
-    /*template<TargetStructDef Def, typename MaterializedWrapper>
-    class target_struct : public std::conditional<std::is_same_v<MaterializedWrapper, void>,
-            typename Def::mat_default,
-            MaterializedWrapper>::type {
-        static_assert(std::is_same_v<MaterializedWrapper, void> || TargetStructMatCustom<MaterializedWrapper>);
-
-        using field_tuple = typename Def::field_tuple;
-        using mat_tuple = typename Def::mat_tuple;
-        using base = typename std::conditional<std::is_same_v<MaterializedWrapper, void>,
-                typename Def::mat_default,
-                MaterializedWrapper>::type;
-        using mat = target_struct;
-
-        using index_seq = std::make_index_sequence<std::tuple_size<field_tuple>::value>;
-    };*/
 }

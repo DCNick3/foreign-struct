@@ -76,7 +76,7 @@ namespace foreign {
 
     template<typename TargetType>
     auto target_unmaterialize(TargetType&& materialized) {
-        std::array<std::uint8_t, target_sizeof_v<TargetType>> buffer;
+        std::array<std::uint8_t, target_sizeof_v<TargetType>> buffer{};
         target_unmaterialize(buffer, std::forward<TargetType>(materialized));
         return buffer;
     }

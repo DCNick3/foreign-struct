@@ -75,10 +75,9 @@ target_struct_field<std::uint32_t, 28>
 // a helper class that allows to access fields by their names
 // a good place for code generation
 struct wrap_struct : public target_struct_base<wrap_struct_def, wrap_struct> {
-    inline wrap_struct(mat_tuple &&values)
-            :
-            test_struct_v(std::move(std::get<0>(values))),
-            test_val(std::move(std::get<1>(values))) {}
+    inline wrap_struct(test_struct test_struct_v, std::uint32_t test_val)
+            : test_struct_v(std::move(test_struct_v))
+            , test_val(test_val) {}
 
     test_struct test_struct_v;
     std::uint32_t test_val;

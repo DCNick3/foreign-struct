@@ -14,6 +14,7 @@
 #include <optional>
 #include <concepts>
 #include <functional>
+#include <memory>
 
 namespace foreign::test {
     namespace ut = boost::ut;
@@ -22,12 +23,13 @@ namespace foreign::test {
     struct umat_chk {
         using buffer_t = array_for<TargetType>;
 
-        TargetType _value;
+        std::shared_ptr<TargetType> _value;
         buffer_t _expected_unmaterialization, _actual_unmaterialization;
 
         umat_chk(TargetType &&value, buffer_t expected_unmaterialization)
-                : _value(std::forward<TargetType>(value)), _expected_unmaterialization(expected_unmaterialization),
-                  _actual_unmaterialization(target_unmaterialize(_value)) {}
+                : _value(std::make_shared<TargetType>(std::forward<TargetType>(value)))
+                , _expected_unmaterialization(expected_unmaterialization)
+                , _actual_unmaterialization(target_unmaterialize(*_value)) {}
 
         operator bool() {
             return _expected_unmaterialization == _actual_unmaterialization;
@@ -39,14 +41,15 @@ namespace foreign::test {
         using buffer_t = array_for<TargetType>;
 
         buffer_t _unmaterialized;
-        TargetType _expected_value, _actual_value;
+        std::shared_ptr<TargetType> _expected_value, _actual_value;
 
         mat_chk(buffer_t unmaterialized, TargetType &&expected_value)
-                : _unmaterialized(unmaterialized), _expected_value(std::forward<TargetType>(expected_value)),
-                  _actual_value(target_materialize<TargetType>(_unmaterialized)) {}
+                : _unmaterialized(unmaterialized)
+                , _expected_value(std::make_shared<TargetType>(std::forward<TargetType>(expected_value)))
+                , _actual_value(std::make_shared<TargetType>(target_materialize<TargetType>(_unmaterialized))) {}
 
         operator bool() {
-            return _expected_value == _actual_value;
+            return *_expected_value == *_actual_value;
         }
     };
 
@@ -56,18 +59,17 @@ namespace foreign::test {
 
         buffer_t _initial, _expected_result, _actual_result;
 
-        acc_chk(buffer_t initial, std::function<void (TargetType&)> func, buffer_t expected_result)
-            : _initial(initial)
-            , _expected_result(expected_result)
-            , _actual_result([&]() {
+        acc_chk(buffer_t initial, std::function<void(TargetType &)> func, buffer_t expected_result)
+                : _initial(initial)
+                , _expected_result(expected_result)
+                , _actual_result([&]() {
                     buffer_t buf(_initial);
                     {
                         target_rw_mat_holder<TargetType> holder(buf);
                         func(*holder);
                     }
                     return buf;
-            }())
-        {}
+                }()) {}
 
         operator bool() {
             return _expected_result == _actual_result;
@@ -87,14 +89,14 @@ namespace foreign::test {
             static constexpr std::size_t length = N;
             std::array<char, N> arr_;
 
-            constexpr string_literal(const char(&in)[N]) : arr_{} {
+            constexpr string_literal(const char(&in)[N])
+                    : arr_{} {
                 std::copy(in, in + N, arr_.begin());
             }
         };
 
         template<typename T, string_literal suffix>
-        struct int_stringifier
-        {
+        struct int_stringifier {
             static auto stringify_value(T t) { return std::to_string(std::forward<T>(t)) + suffix.arr_.data(); }
         };
     }
@@ -212,7 +214,7 @@ namespace foreign::test {
 
             template<typename TargetType>
             auto &operator<<(const umat_chk<TargetType> &chk) {
-                *this << "umat(" << stringify(chk._value) << ") /* "
+                *this << "umat(" << stringify(*chk._value) << ") /* "
                       << chk._actual_unmaterialization << " */ == "
                       << chk._expected_unmaterialization;
                 return *this;
@@ -221,8 +223,8 @@ namespace foreign::test {
             template<typename TargetType>
             auto &operator<<(const mat_chk<TargetType> &chk) {
                 *this << "mat(" << chk._unmaterialized << ") /* "
-                      << stringify(chk._actual_value) << " */ == "
-                      << stringify(chk._expected_value);
+                      << stringify(*chk._actual_value) << " */ == "
+                      << stringify(*chk._expected_value);
                 return *this;
             }
 
@@ -393,8 +395,7 @@ namespace foreign::test {
     }
 
     template<typename TargetType>
-    auto umat(TargetType&& target_type)
-    {
+    auto umat(TargetType &&target_type) {
         return foreign::target_unmaterialize(std::forward<TargetType>(target_type));
     }
 }

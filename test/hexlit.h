@@ -74,5 +74,6 @@ template<detail::string_literal Str>
 auto operator "" _hex()
 -> detail::bytes_literal<(Str.length - 1) / 2>
 {
+    static_assert((Str.length - 1) % 2 == 0);
     return detail::process<Str>(std::make_index_sequence<Str.length - 1>());
 }
