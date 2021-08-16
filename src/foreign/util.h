@@ -87,6 +87,9 @@ namespace foreign {
     concept Enum = std::is_enum_v<T>;
 
     template<typename T>
+    concept Integral = std::is_integral_v<T>;
+
+    template<typename T>
     concept NonConstReference = std::is_reference_v<T> && !std::is_const_v<std::remove_reference_t<T>>;
 
     template<typename T>

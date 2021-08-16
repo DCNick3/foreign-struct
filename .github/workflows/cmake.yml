@@ -17,7 +17,8 @@ jobs:
         os: [ubuntu-latest]
         compiler:
           - { compiler: gcc, version: 11 }
-          - { compiler: clang, version: 12 }
+          - { compiler: clang, version: 12, stdlib: libstdc++ }
+          - { compiler: clang, version: 12, stdlib: libc++ }
         configuration: [Debug, Release, RelWithDebInfo]
         sanitize: [none, undefined]
 
@@ -31,7 +32,7 @@ jobs:
     - name: Install gcc ${{matrix.compiler.version}}
       run:   |
         sudo apt update
-        sudo apt install gcc-11 g++-11
+        sudo apt install gcc-${{matrix.compiler.version}} g++-${{matrix.compiler.version}}
       shell: bash
       if: ${{matrix.compiler.compiler == 'gcc'}}
 
@@ -53,26 +54,26 @@ jobs:
     - name: Install LLVM and Clang
       uses: DCNick3/install-llvm-action@master
       with:
-        version: "12.0.1"
+        version: ${{matrix.compiler.version}}
         cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       if: ${{matrix.compiler.compiler == 'clang'}}
 
 
-    - run: echo -e "CC=gcc-${{matrix.compiler.version}}\nCXX=g++-${{matrix.compiler.version}}" >> $GITHUB_ENV
+    - name: "Use gcc"
+      run: echo -e "CC=gcc-${{matrix.compiler.version}}\nCXX=g++-${{matrix.compiler.version}}" >> $GITHUB_ENV
       if: ${{matrix.compiler.compiler == 'gcc'}}
-    - run: |
-        echo -e "CC=${{env.LLVM_PATH}}/bin/clang\nCXX=${{env.LLVM_PATH}}/bin/clang++" >> $GITHUB_ENV
-        ls ${{env.LLVM_PATH}}
-        ls ${{env.LLVM_PATH}}/bin
+    - name: "Use clang"
+      run: echo -e "CC=${{env.LLVM_PATH}}/bin/clang\nCXX=${{env.LLVM_PATH}}/bin/clang++" >> $GITHUB_ENV
       if: ${{matrix.compiler.compiler == 'clang'}}
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: |
-        ls ${{env.LLVM_PATH}}/bin/clang
-        ${{env.LLVM_PATH}}/bin/clang --version
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.configuration}} -DSANITIZE=${{matrix.sanitize}}
+      run: >-
+        cmake -B ${{github.workspace}}/build
+        -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
+        -DSANITIZE=${{matrix.sanitize}}
+        -DSTDLIB=${{matrix.compiler.stdlib}}
 
     - name: Build
       # Build your program with the given configuration
