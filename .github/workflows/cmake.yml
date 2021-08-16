@@ -51,7 +51,7 @@ jobs:
         key: llvm-12.0.1
       if: ${{matrix.compiler.compiler == 'clang'}}
     - name: Install LLVM and Clang
-      uses: KyleMayes/install-llvm-action@v1
+      uses: DCNick3/install-llvm-action@master
       with:
         version: "12.0.1"
         cached: ${{ steps.cache-llvm.outputs.cache-hit }}
