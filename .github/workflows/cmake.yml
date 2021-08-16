@@ -24,15 +24,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install gcc 11, valgrind
+      run:   |
+        sudo apt update
+        sudo apt install gcc-11 g++-11 valgrind
+      shell: bash
+
     - uses: actions/checkout@v2
     - name: Checkout submodules
       uses: textbook/git-checkout-submodule-action@master
-    - name: Install gcc 11
-      run:   |
-             sudo apt update
-             sudo apt install gcc-11 g++-11
-      shell: bash
-      
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -47,4 +48,10 @@ jobs:
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{matrix.configuration}}
+
+    - name: Test with valgrind
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: valgrind --trace-children=yes ctest -C ${{matrix.configuration}}
       
