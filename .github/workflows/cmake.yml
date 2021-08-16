@@ -24,6 +24,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@master
+
     - name: Install gcc ${{matrix.compiler.version}}
       run:   |
         sudo apt update
@@ -61,10 +65,6 @@ jobs:
         ls ${{env.LLVM_PATH}}
         ls ${{env.LLVM_PATH}}/bin
       if: ${{matrix.compiler.compiler == 'clang'}}
-
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
