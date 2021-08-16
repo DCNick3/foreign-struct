@@ -28,36 +28,34 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install gcc 11
-        run:   |
-          sudo apt update
-          sudo apt install gcc-11 g++-11
-        shell: bash
-        if: ${{matrix.compiler.compiler == 'gcc'}}
+    - name: Install gcc 11
+      run:   |
+        sudo apt update
+        sudo apt install gcc-11 g++-11
+      shell: bash
+      if: ${{matrix.compiler.compiler == 'gcc'}}
 
-      - name: Install valgrind
-        run:   |
-          sudo apt update
-          sudo apt install valgrind
-        shell: bash
-        if: ${{matrix.sanitize == 'none' && matrix.os == 'linux-latest'}}
+    - name: Install valgrind
+      run:   |
+        sudo apt update
+        sudo apt install valgrind
+      shell: bash
+      if: ${{matrix.sanitize == 'none' && matrix.os == 'linux-latest'}}
 
-      - name: Cache LLVM and Clang
-        id: cache-llvm
-        uses: actions/cache@v2
-        with:
-          path: |
-            ./llvm
-          key: llvm-12.0.1
-        if: ${{matrix.compiler.compiler == 'clang'}}
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "12.0.1"
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-        if: ${{matrix.compiler.compiler == 'clang'}}
-
-
+    - name: Cache LLVM and Clang
+      id: cache-llvm
+      uses: actions/cache@v2
+      with:
+        path: |
+          ./llvm
+        key: llvm-12.0.1
+      if: ${{matrix.compiler.compiler == 'clang'}}
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v1
+      with:
+        version: "12.0.1"
+        cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      if: ${{matrix.compiler.compiler == 'clang'}}
 
 
     - uses: actions/checkout@v2
