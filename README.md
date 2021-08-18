@@ -1,3 +1,5 @@
+![workflow badge](https://github.com/DCNick3/foreign-struct/actions/workflows/cmake.yml/badge.svg)
+
 # foreign-struct (name subject to change)
 
 C++20 header-only library to interoperate with C objects of any layout, all in standard C++.
@@ -16,30 +18,38 @@ Out-of-the box it supports the following object kinds:
 - enums
 - structures
 - unions
+- arrays
 
-While integers and enums do not require any prior definitions, you would have to supply some info for structures and unions.
+While integers, enums and arrays do not require any prior definitions, you would have to supply some info for structures and unions.
+
+### structure definition
 
 For struct you would need to specify the list of fields, their offsets and overall size of the structure. Currently there is no way to automatically lay out the fields.
 
-(TODO: add the size specification to the `target_struct_def` (name subject to change))
+```C++
+using def = foreign::target_struct_def;
+using field = foreign::target_struct_field;
 
-```
-using test_struct_def = target_struct_def<
-  target_struct_field<std::int32_t, 0>,
-  target_struct_field<std::uint64_t, 8>,
-  target_struct_field<test_enum, 16>,
-  target_struct_field<test_union, 20>
+using test_struct_def = def<
+  // specify the structure size
+  16,
+  // specify the type and offset of fields
+  field<std::uint64_t, 0>,
+  field<std::int32_t, 8>
 >;
 ```
 
+The structure can have gaps in it (i.e. regions that are not covered by any fields). This is usually needed to support structure alignment.
+
+
 After having the structure definition you two options for accessing your members: you either access them via indeces like an `std::tuple`:
-```
+```C++
 using test_struct = target_struct_unnamed<test_struct_def>;
 ```
 
 or define a wrapper class which assigns names to the fields:
 
-```
+```C++
 struct test_struct : public target_struct_base<test_struct_def, test_struct> {
     inline test_struct(mat_tuple &&values)
             :
